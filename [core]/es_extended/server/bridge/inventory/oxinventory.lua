@@ -21,15 +21,25 @@ ESX.GetItemLabel = function(item)
 end
 
 function setPlayerInventory(playerId, xPlayer, inventory, isNew)
-    exports.ox_inventory:setPlayerInventory(xPlayer, inventory)
-    if isNew then
-        local shared = json.decode(GetConvar("inventory:accounts", '["money"]'))
+    local shared = json.decode(GetConvar("inventory:accounts", '["money"]'))
 
-        for i = 1, #shared do
-            local name = shared[i]
-            local account = Config.StartingAccountMoney[name]
-            if account then
-                exports.ox_inventory:AddItem(playerId, name, account)
+    local accounts = xPlayer.getAccounts(true)
+
+    exports.ox_inventory:setPlayerInventory(xPlayer, inventory)
+
+    for i = 1, #shared do
+        local name = shared[i]
+
+        if isNew then
+            local startingAmount = Config.StartingAccountMoney[name]
+            if startingAmount then
+                exports.ox_inventory:AddItem(playerId, name, startingAmount)
+            end
+        else
+            local amount = accounts[name]
+
+            if amount >= 0 then
+                exports.ox_inventory:SetItem(playerId, name, amount)
             end
         end
     end
